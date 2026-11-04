@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Arc?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane fx:id="root" minHeight="720.0" minWidth="1020.0" prefHeight="880.0" prefWidth="1260.0"
+            stylesheets="@home.css" styleClass="app-root"
+            xmlns="http://javafx.com/javafx/17.0.2" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.controller.HomeController">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="16.0" styleClass="top-bar">
+            <padding><Insets top="14.0" right="30.0" bottom="14.0" left="30.0"/></padding>
+            <VBox spacing="2.0">
+                <Label text="⚡ CODEMATE PRO" styleClass="brand-title"/>
+                <Label text="Quản lý thời gian Pomodoro &amp; Thói quen uống nước" styleClass="brand-subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <HBox alignment="CENTER" spacing="14.0">
+                <Label text="👤" style="-fx-font-size: 16px;"/>
+                <Label fx:id="userGreeting" text="Xin chào" styleClass="greeting-label"/>
+                <Button text="Đăng xuất" onAction="#logout" styleClass="btn-logout"/>
+            </HBox>
+        </HBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="mainTabPane" tabClosingPolicy="UNAVAILABLE" styleClass="main-tabs">
+            <tabs>
+                <!-- TAB 1: POMODORO & CÔNG VIỆC -->
+                <Tab text="Pomodoro &amp; Công việc">
+                    <content>
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+                            <content>
+                                <VBox spacing="20.0" styleClass="page-content">
+                                    <HBox spacing="24.0">
+                                        <!-- CỘT TRÁI: ĐỒNG HỒ POMODORO VÒNG TRÒN NEON CỐ ĐỊNH TÂM -->
+                                        <VBox alignment="CENTER" spacing="18.0" styleClass="card, pomodoro-card">
+                                            <Label fx:id="timerStatusBadge" text="🎯 SẴN SÀNG TẬP TRUNG (25 PHÚT)" styleClass="timer-status-badge"/>
+
+                                            <!-- CIRCULAR TIMER PROGRESS RING - CỐ ĐỊNH TÂM TUYỆT ĐỐI -->
+                                            <StackPane styleClass="timer-ring-container">
+                                                <!-- Vòng tròn nền xám đậm -->
+                                                <Circle radius="105.0" fill="transparent" stroke="#172642" strokeWidth="12.0"/>
+                                                <!-- Group giữ nguyên kích thước 210x210 để Arc co lại mà KHÔNG BAO GIỜ bị lệch tâm -->
+                                                <Group>
+                                                    <Circle radius="105.0" fill="transparent" stroke="transparent" strokeWidth="12.0"/>
+                                                    <Arc fx:id="timerProgressArc" radiusX="105.0" radiusY="105.0" startAngle="90.0" length="360.0"
+                                                         fill="transparent" stroke="#38bdf8" strokeWidth="12.0" strokeLineCap="ROUND" type="OPEN"/>
+                                                </Group>
+                                                <!-- Nội dung ở giữa vòng tròn -->
+                                                <VBox alignment="CENTER" spacing="4.0">
+                                                    <Label text="THỜI GIAN" style="-fx-font-size: 11px; -fx-text-fill: #94a3b8; -fx-font-weight: bold;"/>
+                                                    <Label fx:id="timerLabel" text="25:00" styleClass="timer-number"/>
+                                                    <Label fx:id="currentTaskBadge" text="Chưa chọn công việc cụ thể" styleClass="current-task-badge" maxWidth="240.0" wrapText="true" alignment="CENTER"/>
+                                                </VBox>
+                                            </StackPane>
+
+                                            <!-- CHUYỂN NHANH CHẾ ĐỘ (CÂN ĐỐI, ĐỦ CHỮ) -->
+                                            <VBox spacing="8.0" alignment="CENTER" maxWidth="Infinity">
+                                                <Label text="CHỌN THỜI LƯỢNG PHIÊN" style="-fx-font-size: 10px; -fx-text-fill: #64748b; -fx-font-weight: 800;"/>
+                                                <HBox alignment="CENTER" spacing="6.0" maxWidth="Infinity">
+                                                    <Button fx:id="btnPomo25" text="25 phút" onAction="#selectPomo25" styleClass="pill-mode-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                                    <Button fx:id="btnPomo30" text="30 phút" onAction="#selectPomo30" styleClass="pill-mode-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                                    <Button fx:id="btnBreak5" text="Nghỉ 5p" onAction="#selectBreak5" styleClass="pill-mode-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                                    <Button fx:id="btnBreak15" text="Nghỉ 15p" onAction="#selectBreak15" styleClass="pill-mode-btn" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                                </HBox>
+                                            </VBox>
+
+                                            <!-- NÚT ĐIỀU KHIỂN CHÍNH -->
+                                            <HBox alignment="CENTER" spacing="8.0" maxWidth="Infinity">
+                                                <Button fx:id="startButton" text="▶ Bắt đầu" onAction="#startTimerAction" styleClass="btn-timer-play" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                                <Button fx:id="pauseButton" text="⏸ Tạm dừng" onAction="#pauseTimerAction" disable="true" styleClass="btn-timer-pause" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                                <Button fx:id="cancelButton" text="⏹ Đặt lại" onAction="#cancelTimerAction" disable="true" styleClass="btn-timer-cancel" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+                                            </HBox>
+
+                                        </VBox>
+
+                                        <!-- CỘT PHẢI: QUẢN LÝ CÔNG VIỆC 3 CẤP ĐỘ + CHỌN NGÀY / LỊCH TRÌNH -->
+                                        <VBox spacing="16.0" styleClass="card, todo-card" HBox.hgrow="ALWAYS">
+                                            <!-- TIÊU ĐỀ & TIẾN ĐỘ -->
+                                            <HBox alignment="CENTER_LEFT" spacing="16.0">
+                                                <VBox spacing="3.0">
+                                                    <Label text="📋 Quản lý Công việc thông minh" styleClass="section-heading"/>
+                                                    <Label fx:id="todoCountLabel" text="0 công việc" style="-fx-text-fill: #94a3b8; -fx-font-size: 12px;"/>
+                                                </VBox>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <!-- TIẾN ĐỘ HOÀN THÀNH -->
+                                                <VBox alignment="CENTER_RIGHT" spacing="4.0" prefWidth="180.0">
+                                                    <HBox alignment="CENTER_RIGHT" spacing="6.0">
+                                                        <Label text="Tiến độ:" style="-fx-text-fill: #94a3b8; -fx-font-size: 11px;"/>
+                                                        <Label fx:id="todoProgressLabel" text="0%" style="-fx-text-fill: #38bdf8; -fx-font-weight: 800; -fx-font-size: 13px;"/>
+                                                    </HBox>
+                                                    <ProgressBar fx:id="todoProgress" progress="0.0" maxWidth="Infinity" styleClass="progress-bar"/>
+                                                </VBox>
+                                            </HBox>
+
+                                            <!-- THANH CHỌN NGÀY & LỊCH CẢ THÁNG/NĂM -->
+                                            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="date-switcher-bar">
+                                                <Label text="Lịch trình:" style="-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                                                <Button fx:id="btnViewToday" text="Hôm nay" onAction="#viewTodayTasks" styleClass="date-tab-active"/>
+                                                <Button fx:id="btnViewTomorrow" text="Ngày mai" onAction="#viewTomorrowTasks" styleClass="date-tab-inactive"/>
+                                                
+                                                <HBox alignment="CENTER_LEFT" spacing="6.0">
+                                                    <Label text="Chọn ngày:" style="-fx-text-fill: #64748b; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+                                                    <DatePicker fx:id="taskDatePicker" onAction="#onDatePicked" prefWidth="130.0" styleClass="modern-date-picker"/>
+                                                </HBox>
+
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Button text="🌙 Chuyển việc dở sang mai" onAction="#moveIncompleteToTomorrow"
+                                                        styleClass="btn-move-tomorrow"/>
+                                            </HBox>
+
+                                            <!-- THANH NHẬP VIỆC TRỰC TIẾP (INLINE INPUT) -->
+                                            <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="inline-input-bar">
+                                                <TextField fx:id="newTodoInput" promptText="Nhập tên công việc mới cần làm... (nhấn Enter để thêm)"
+                                                           HBox.hgrow="ALWAYS" styleClass="todo-text-field" onAction="#addTodoInline"/>
+                                                <HBox spacing="6.0" alignment="CENTER">
+                                                    <Button fx:id="btnPriorityUrgent" text="🔥 Làm ngay" onAction="#setPriorityUrgent" styleClass="priority-btn, priority-btn-urgent-active"/>
+                                                    <Button fx:id="btnPriorityImportant" text="⚡ Quan trọng" onAction="#setPriorityImportant" styleClass="priority-btn"/>
+                                                    <Button fx:id="btnPriorityNormal" text="📌 Lúc rảnh" onAction="#setPriorityNormal" styleClass="priority-btn"/>
+                                                </HBox>
+                                                <Button text="+ Thêm việc" onAction="#addTodoInline" styleClass="btn-add-todo"/>
+                                            </HBox>
+
+                                            <!-- DANH SÁCH CÔNG VIỆC PHÂN THEO 3 CẤP ĐỘ -->
+                                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" styleClass="todo-scroll">
+                                                <content>
+                                                    <VBox spacing="14.0" style="-fx-padding: 4 2 12 2;">
+                                                        <!-- MỨC 1: CẦN LÀM NGAY (ĐẶC BIỆT) -->
+                                                        <VBox fx:id="urgentSection" spacing="8.0">
+                                                            <Label text="🔥 ƯU TIÊN SỐ 1 — CẦN LÀM NGAY (ĐẶC BIỆT)" styleClass="tier-header-urgent"/>
+                                                            <VBox fx:id="urgentListContainer" spacing="8.0"/>
+                                                        </VBox>
+
+                                                        <!-- MỨC 2: VIỆC QUAN TRỌNG (NHÌ) -->
+                                                        <VBox fx:id="importantSection" spacing="8.0">
+                                                            <Label text="⚡ ƯU TIÊN SỐ 2 — VIỆC QUAN TRỌNG (NHÌ)" styleClass="tier-header-important"/>
+                                                            <VBox fx:id="importantListContainer" spacing="8.0"/>
+                                                        </VBox>
+
+                                                        <!-- MỨC 3: VIỆC LINH HOẠT (BA / LÚC RẢNH) -->
+                                                        <VBox fx:id="normalSection" spacing="8.0">
+                                                            <Label text="📌 ƯU TIÊN SỐ 3 — VIỆC LINH HOẠT (BA / LÚC RẢNH)" styleClass="tier-header-normal"/>
+                                                            <VBox fx:id="normalListContainer" spacing="8.0"/>
+                                                        </VBox>
+
+                                                        <!-- THÔNG BÁO KHI DANH SÁCH TRỐNG -->
+                                                        <Label fx:id="emptyTodoNotice" text="✨ Chưa có công việc nào. Hãy nhập vào ô bên trên để thêm việc!"
+                                                               styleClass="empty-state" maxWidth="Infinity" alignment="CENTER"/>
+                                                    </VBox>
+                                                </content>
+                                            </ScrollPane>
+                                        </VBox>
+                                    </HBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+
+                <!-- TAB 2: THEO DÕI UỐNG NƯỚC -->
+                <Tab text="Theo dõi Uống nước">
+                    <content>
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+                            <content>
+                                <VBox alignment="TOP_CENTER" spacing="24.0" styleClass="page-content">
+                                    <VBox alignment="CENTER" spacing="22.0" styleClass="card, water-hero-card">
+                                        <Label text="THEO DÕI NƯỚC UỐNG HÔM NAY" style="-fx-font-size: 13px; -fx-text-fill: #38bdf8; -fx-font-weight: 800; -fx-letter-spacing: 1px;"/>
+
+                                        <HBox alignment="CENTER" spacing="16.0">
+                                            <Label fx:id="waterTotalLabel" text="0 ml" styleClass="water-total-number"/>
+                                            <Label fx:id="waterPercentLabel" text="0%" styleClass="water-percent-badge"/>
+                                        </HBox>
+
+                                        <Label fx:id="waterGoalLabel" text="Mục tiêu 2,000 ml · Còn lại 2000 ml" style="-fx-font-size: 14px; -fx-text-fill: #94a3b8;"/>
+
+                                        <!-- THANH ĐO NƯỚC UỐNG LỚN -->
+                                        <ProgressBar fx:id="waterProgress" progress="0.0" maxWidth="640.0" prefHeight="20.0" styleClass="progress-bar"/>
+
+                                        <!-- CÁC NÚT NẠP NƯỚC NHANH (QUICK ACTIONS - KHÔNG LỖI ICON) -->
+                                        <HBox alignment="CENTER" spacing="14.0" style="-fx-padding: 10 0 0 0;">
+                                            <Button text="+ 250 ml (1 Ly)" onAction="#addWater250" styleClass="btn-water-action, btn-water-250"/>
+                                            <Button text="+ 500 ml (1 Bình)" onAction="#addWater500" styleClass="btn-water-action, btn-water-500"/>
+                                            <Button text="+ 100 ml (Ngụm nhỏ)" onAction="#addWater100" styleClass="btn-water-action, btn-water-100"/>
+                                            <Button text="− 250 ml (Hoàn tác)" onAction="#subtractWater250" styleClass="btn-water-minus"/>
+                                        </HBox>
+
+                                        <!-- THẺ GHI CHÚ SỨC KHỎE (PILL STYLE CHUẨN THEO ẢNH 4) -->
+                                        <HBox alignment="CENTER" spacing="8.0" styleClass="water-tip-box">
+                                            <Label fx:id="waterTipLabel" text="💧 Đã đi được hơn nửa chặng đường rồi! Tiếp tục nạp năng lượng nào."
+                                                   styleClass="smart-tip-text"/>
+                                        </HBox>
+
+                                    </VBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+
+                <!-- TAB 3: THỐNG KÊ TUẦN (GLASSMORPHISM & ĐIỀU HƯỚNG TUẦN) -->
+                <Tab text="Thống kê tuần">
+                    <content>
+                        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="page-scroll">
+                            <content>
+                                <VBox spacing="18.0" styleClass="page-content">
+                                    <VBox spacing="4.0">
+                                        <Label text="📈 Báo cáo năng suất tuần" styleClass="section-heading"/>
+                                        <Label text="Theo dõi sự tiến bộ về thời gian làm việc tập trung và thói quen bổ sung nước (rê chuột vào cột để xem chi tiết)." style="-fx-text-fill: #94a3b8; -fx-font-size: 13px;"/>
+                                    </VBox>
+
+                                    <!-- THANH ĐIỀU HƯỚNG TUẦN (XEM TUẦN TRƯỚC / TUẦN NÀY / TUẦN SAU) -->
+                                    <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="week-nav-bar">
+                                        <Button text="◀ Tuần trước" onAction="#handlePrevWeek" styleClass="btn-week-nav"/>
+                                        <Button fx:id="btnThisWeek" text="Tuần này" onAction="#handleCurrentWeek" styleClass="btn-week-current"/>
+                                        <Button text="Tuần sau ▶" onAction="#handleNextWeek" styleClass="btn-week-nav"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label fx:id="weekRangeLabel" text="Tuần: 02/11/2026 - 08/11/2026 (Tuần này)" styleClass="week-range-label"/>
+                                    </HBox>
+
+                                    <!-- 3 THẺ CHỈ SỐ KPI TỔNG KẾT TUẦN NÀY (GLASSMORPHISM) -->
+                                    <HBox spacing="16.0">
+                                        <!-- KPI 1: Tổng thời gian tập trung -->
+                                        <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                                            <Label text="⏰" styleClass="kpi-icon"/>
+                                            <VBox spacing="2.0">
+                                                <Label text="Tổng giờ tập trung" styleClass="kpi-label"/>
+                                                <Label fx:id="kpiTotalHours" text="0.0 giờ" styleClass="kpi-value-work"/>
+                                                <Label text="Tuần đã chọn" styleClass="kpi-sub"/>
+                                            </VBox>
+                                        </HBox>
+
+                                        <!-- KPI 2: Nước trung bình / ngày -->
+                                        <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                                            <Label text="💧" styleClass="kpi-icon"/>
+                                            <VBox spacing="2.0">
+                                                <Label text="Nước trung bình" styleClass="kpi-label"/>
+                                                <Label fx:id="kpiAvgWater" text="0 ml/ngày" styleClass="kpi-value-water"/>
+                                                <Label text="Mục tiêu 2,000 ml" styleClass="kpi-sub"/>
+                                            </VBox>
+                                        </HBox>
+
+                                        <!-- KPI 3: Chuỗi ngày liên tục (Streak) -->
+                                        <HBox alignment="CENTER_LEFT" spacing="14.0" styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                                            <Label text="🔥" styleClass="kpi-icon"/>
+                                            <VBox spacing="2.0">
+                                                <Label text="Chuỗi ngày liên tục" styleClass="kpi-label"/>
+                                                <Label fx:id="kpiStreakDays" text="4 ngày liên tiếp" styleClass="kpi-value-streak"/>
+                                                <Label text="Đang duy trì phong độ" styleClass="kpi-sub"/>
+                                            </VBox>
+                                        </HBox>
+                                    </HBox>
+
+
+                                    <!-- BIỂU ĐỒ 1: THỜI GIAN LÀM VIỆC (GLASSMORPHISM CARD) -->
+                                    <VBox spacing="10.0" styleClass="card, chart-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                            <Label text="Tổng phút làm việc Pomodoro" styleClass="chart-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                            <Label text="🎯 Mục tiêu: 100 phút/ngày" styleClass="chart-goal-badge-work"/>
+                                        </HBox>
+                                        <BarChart fx:id="workChart" id="workChart" animated="false" legendVisible="false" prefHeight="270.0" styleClass="dark-chart">
+                                            <xAxis><CategoryAxis fx:id="workXAxis" label="Ngày"/></xAxis>
+                                            <yAxis><NumberAxis fx:id="workYAxis" label="Phút" forceZeroInRange="true"/></yAxis>
+                                        </BarChart>
+                                    </VBox>
+
+                                    <!-- BIỂU ĐỒ 2: NƯỚC UỐNG (GLASSMORPHISM CARD) -->
+                                    <VBox spacing="10.0" styleClass="card, chart-card">
+                                        <HBox alignment="CENTER_LEFT" spacing="12.0">
+                                            <Label text="Tổng lượng nước đã uống (ml)" styleClass="chart-title"/>
+                                            <Region HBox.hgrow="ALWAYS"/>
+                                            <Label text="🎯 Mục tiêu: 2,000 ml/ngày" styleClass="chart-goal-badge-water"/>
+                                        </HBox>
+                                        <BarChart fx:id="waterChart" id="waterChart" animated="false" legendVisible="false" prefHeight="270.0" styleClass="dark-chart">
+                                            <xAxis><CategoryAxis fx:id="waterXAxis" label="Ngày"/></xAxis>
+                                            <yAxis><NumberAxis fx:id="waterYAxis" label="ml" forceZeroInRange="true"/></yAxis>
+                                        </BarChart>
+                                    </VBox>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </center>
+</BorderPane>
