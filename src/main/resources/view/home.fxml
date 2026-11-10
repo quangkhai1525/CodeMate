@@ -33,9 +33,10 @@
                 <Label text="Quản lý thời gian Pomodoro &amp; Thói quen uống nước" styleClass="brand-subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
-            <HBox alignment="CENTER" spacing="14.0">
+            <HBox alignment="CENTER" spacing="12.0">
                 <Label text="👤" style="-fx-font-size: 16px;"/>
                 <Label fx:id="userGreeting" text="Xin chào" styleClass="greeting-label"/>
+                <Button text="🔑 Đổi mật khẩu" onAction="#openChangePasswordDialog" styleClass="btn-change-pass"/>
                 <Button text="Đăng xuất" onAction="#logout" styleClass="btn-logout"/>
             </HBox>
         </HBox>

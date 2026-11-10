@@ -52,4 +52,14 @@ public class LoginDAO {
     public User getUserByUsername(String username){
         return getUserByValue( username,"username", ErrorMessage.username);
     }
+    public User getUserById(Long id) {
+        EntityManager em = DBConnection.getEntityManager();
+        try {
+            return em.find(User.class, id);
+        } finally {
+            if (em != null && em.isOpen()) {
+                em.close();
+            }
+        }
+    }
 }

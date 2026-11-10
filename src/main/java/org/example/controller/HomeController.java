@@ -6,6 +6,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
@@ -19,7 +20,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
@@ -40,6 +43,8 @@ import org.example.dao.WaterLogDAO;
 import org.example.model.TodoItem;
 import org.example.model.User;
 import org.example.model.UserSession;
+import org.example.service.AuthService;
+import org.example.service.impl.AuthServiceImpl;
 import org.example.utils.ChangeFXML;
 
 import java.time.DayOfWeek;
@@ -134,6 +139,7 @@ public class HomeController {
     private final TodoDAO todoDAO = new TodoDAO();
     private final WaterLogDAO waterLogDAO = new WaterLogDAO();
     private final TimeManagementDAO timeManagementDAO = new TimeManagementDAO();
+    private final AuthService authService = new AuthServiceImpl();
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor(task -> {
         Thread thread = new Thread(task, "codemate-database");
         thread.setDaemon(true);
@@ -660,6 +666,11 @@ public class HomeController {
             showInformation("Đã gán công việc: \"" + item.getTitle() + "\" vào đồng hồ Pomodoro!");
         });
 
+        // Edit button
+        Button editBtn = new Button("✏ Sửa");
+        editBtn.getStyleClass().add("task-btn-edit");
+        editBtn.setOnAction(e -> handleEditTodo(item));
+
         // Delete button
         Button delBtn = new Button("✕");
         delBtn.getStyleClass().add("task-btn-delete");
@@ -668,8 +679,70 @@ public class HomeController {
         });
 
         HBox.setHgrow(checkBox, Priority.ALWAYS);
-        card.getChildren().addAll(badge, checkBox, playBtn, delBtn);
+        card.getChildren().addAll(badge, checkBox, playBtn, editBtn, delBtn);
         return card;
+    }
+
+    private void handleEditTodo(TodoItem item) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Sửa công việc");
+        dialog.setHeaderText("Chỉnh sửa tên công việc");
+        if (root != null && root.getScene() != null && root.getScene().getWindow() != null) {
+            dialog.initOwner(root.getScene().getWindow());
+        }
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getStylesheets().add(getClass().getResource("/view/home.css").toExternalForm());
+
+        ButtonType btnSave = new ButtonType("Lưu thay đổi", ButtonBar.ButtonData.OK_DONE);
+        ButtonType btnCancel = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
+        pane.getButtonTypes().setAll(btnSave, btnCancel);
+
+        VBox content = new VBox(10.0);
+        content.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
+        content.setPrefWidth(380.0);
+
+        Label prompt = new Label("Tên công việc mới:");
+        prompt.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-weight: bold;");
+
+        TextField txtNewTitle = new TextField(item.getTitle());
+        txtNewTitle.getStyleClass().add("custom-input");
+        content.getChildren().addAll(prompt, txtNewTitle);
+
+        pane.setContent(content);
+
+        Platform.runLater(txtNewTitle::requestFocus);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == btnSave) {
+                return txtNewTitle.getText();
+            }
+            return null;
+        });
+
+        try {
+            Button saveButton = (Button) pane.lookupButton(btnSave);
+            if (saveButton != null) {
+                saveButton.setStyle("-fx-background-color: #38bdf8; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;");
+            }
+            Button cancelButton = (Button) pane.lookupButton(btnCancel);
+            if (cancelButton != null) {
+                cancelButton.setStyle("-fx-background-color: #334155; -fx-text-fill: #cbd5e1; -fx-background-radius: 10px; -fx-cursor: hand;");
+            }
+        } catch (Exception ignored) {}
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(newTitle -> {
+            String trimmed = newTitle == null ? "" : newTitle.trim();
+            if (trimmed.isEmpty()) {
+                showError("Tên công việc không được để trống!");
+                return;
+            }
+            if (trimmed.equals(item.getTitle())) {
+                return;
+            }
+            runDatabaseWrite(() -> todoDAO.rename(item.getId(), trimmed), "Lỗi khi cập nhật tên công việc.");
+        });
     }
 
     // ==========================================
@@ -909,6 +982,118 @@ public class HomeController {
                 });
             }
         });
+    }
+
+    @FXML
+    private void openChangePasswordDialog() {
+        User currentUser = UserSession.getCurrentUser();
+        if (currentUser == null || currentUser.getId() == null) {
+            showError("Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn.");
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Đổi mật khẩu tài khoản");
+        dialog.setHeaderText("Cập nhật mật khẩu cho: " + (currentUser.getFullname() != null ? currentUser.getFullname() : currentUser.getUsername()));
+        if (root != null && root.getScene() != null && root.getScene().getWindow() != null) {
+            dialog.initOwner(root.getScene().getWindow());
+        }
+
+        DialogPane pane = dialog.getDialogPane();
+        pane.getStylesheets().add(getClass().getResource("/view/home.css").toExternalForm());
+
+        ButtonType btnSubmit = new ButtonType("Đổi mật khẩu", ButtonBar.ButtonData.OK_DONE);
+        ButtonType btnCancel = new ButtonType("Hủy", ButtonBar.ButtonData.CANCEL_CLOSE);
+        pane.getButtonTypes().setAll(btnSubmit, btnCancel);
+
+        VBox content = new VBox(12.0);
+        content.setPrefWidth(380.0);
+        content.setPadding(new Insets(10.0, 0.0, 0.0, 0.0));
+
+        Label lblCurrent = new Label("Mật khẩu hiện tại:");
+        lblCurrent.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-weight: bold;");
+        PasswordField txtOldPass = new PasswordField();
+        txtOldPass.setPromptText("Nhập mật khẩu hiện tại");
+        txtOldPass.getStyleClass().add("custom-input");
+
+        Label lblNew = new Label("Mật khẩu mới (tối thiểu 6 ký tự):");
+        lblNew.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-weight: bold;");
+        PasswordField txtNewPass = new PasswordField();
+        txtNewPass.setPromptText("Nhập mật khẩu mới");
+        txtNewPass.getStyleClass().add("custom-input");
+
+        Label lblConfirm = new Label("Xác nhận mật khẩu mới:");
+        lblConfirm.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-weight: bold;");
+        PasswordField txtConfirmPass = new PasswordField();
+        txtConfirmPass.setPromptText("Nhập lại mật khẩu mới");
+        txtConfirmPass.getStyleClass().add("custom-input");
+
+        Label lblError = new Label();
+        lblError.setStyle("-fx-text-fill: #f87171; -fx-font-size: 12px; -fx-font-weight: bold;");
+        lblError.setVisible(false);
+        lblError.setManaged(false);
+
+        content.getChildren().addAll(lblCurrent, txtOldPass, lblNew, txtNewPass, lblConfirm, txtConfirmPass, lblError);
+        pane.setContent(content);
+
+        Platform.runLater(txtOldPass::requestFocus);
+
+        Button submitBtn = (Button) pane.lookupButton(btnSubmit);
+        if (submitBtn != null) {
+            submitBtn.setStyle("-fx-background-color: #38bdf8; -fx-text-fill: #0f172a; -fx-font-weight: bold; -fx-background-radius: 10px; -fx-cursor: hand;");
+            submitBtn.addEventFilter(ActionEvent.ACTION, event -> {
+                String oldP = txtOldPass.getText() == null ? "" : txtOldPass.getText();
+                String newP = txtNewPass.getText() == null ? "" : txtNewPass.getText();
+                String confirmP = txtConfirmPass.getText() == null ? "" : txtConfirmPass.getText();
+
+                if (oldP.isEmpty() || newP.isEmpty() || confirmP.isEmpty()) {
+                    lblError.setText("Vui lòng nhập đầy đủ các trường thông tin!");
+                    lblError.setVisible(true);
+                    lblError.setManaged(true);
+                    event.consume();
+                    return;
+                }
+                if (newP.length() < 6) {
+                    lblError.setText("Mật khẩu mới phải có ít nhất 6 ký tự!");
+                    lblError.setVisible(true);
+                    lblError.setManaged(true);
+                    event.consume();
+                    return;
+                }
+                if (!newP.equals(confirmP)) {
+                    lblError.setText("Mật khẩu xác nhận không trùng khớp!");
+                    lblError.setVisible(true);
+                    lblError.setManaged(true);
+                    event.consume();
+                    return;
+                }
+                if (oldP.equals(newP)) {
+                    lblError.setText("Mật khẩu mới không được trùng với mật khẩu cũ!");
+                    lblError.setVisible(true);
+                    lblError.setManaged(true);
+                    event.consume();
+                    return;
+                }
+
+                boolean success = authService.changePassword(currentUser.getId(), oldP, newP);
+                if (!success) {
+                    lblError.setText("Mật khẩu hiện tại không chính xác!");
+                    lblError.setVisible(true);
+                    lblError.setManaged(true);
+                    event.consume();
+                    return;
+                }
+
+                showInformation("Đổi mật khẩu thành công! Vui lòng ghi nhớ mật khẩu mới.");
+            });
+        }
+
+        Button cancelBtn = (Button) pane.lookupButton(btnCancel);
+        if (cancelBtn != null) {
+            cancelBtn.setStyle("-fx-background-color: #334155; -fx-text-fill: #cbd5e1; -fx-background-radius: 10px; -fx-cursor: hand;");
+        }
+
+        dialog.showAndWait();
     }
 
     @FXML

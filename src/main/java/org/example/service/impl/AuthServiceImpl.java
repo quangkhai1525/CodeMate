@@ -66,4 +66,18 @@ public class AuthServiceImpl implements AuthService {
         newUser.setPassword(hashPass);
         return registerDAO.registerNewUser(newUser);
     }
+
+    @Override
+    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
+        if (userId == null || oldPassword == null || newPassword == null) {
+            return false;
+        }
+        User user = loginDAO.getUserById(userId);
+        if (user != null && HashedPasswordUtils.checkHashedPassword(oldPassword, user.getPassword())) {
+            String hashed = HashedPasswordUtils.hashedPassword(newPassword);
+            user.setPassword(hashed);
+            return loginDAO.updateUser(user);
+        }
+        return false;
+    }
 }

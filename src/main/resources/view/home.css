@@ -44,6 +44,22 @@
     -fx-background-color: #ef4444;
     -fx-text-fill: white;
 }
+.btn-change-pass {
+    -fx-background-color: rgba(56, 189, 248, 0.12);
+    -fx-text-fill: #38bdf8;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16 8 16;
+    -fx-background-radius: 20px;
+    -fx-border-color: rgba(56, 189, 248, 0.35);
+    -fx-border-radius: 20px;
+    -fx-cursor: hand;
+}
+.btn-change-pass:hover {
+    -fx-background-color: #38bdf8;
+    -fx-text-fill: #0b132b;
+    -fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.4), 8, 0.2, 0, 1);
+}
 
 /* NAVIGATION TABS */
 .main-tabs {
@@ -274,6 +290,20 @@
 .todo-text-field:focused {
     -fx-background-color: transparent;
 }
+.custom-input {
+    -fx-background-color: #172642;
+    -fx-text-fill: #ffffff;
+    -fx-prompt-text-fill: #64748b;
+    -fx-font-size: 13px;
+    -fx-padding: 9 14 9 14;
+    -fx-background-radius: 10px;
+    -fx-border-color: rgba(56, 189, 248, 0.3);
+    -fx-border-radius: 10px;
+}
+.custom-input:focused {
+    -fx-border-color: #38bdf8;
+    -fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.35), 8, 0.2, 0, 1);
+}
 .priority-btn {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
@@ -400,6 +430,22 @@
 .task-btn-focus:hover {
     -fx-background-color: #38bdf8;
     -fx-text-fill: #0f172a;
+}
+.task-btn-edit {
+    -fx-background-color: rgba(148, 163, 184, 0.12);
+    -fx-text-fill: #cbd5e1;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-padding: 6 12 6 12;
+    -fx-background-radius: 10px;
+    -fx-border-color: rgba(148, 163, 184, 0.25);
+    -fx-border-radius: 10px;
+    -fx-cursor: hand;
+}
+.task-btn-edit:hover {
+    -fx-background-color: rgba(56, 189, 248, 0.25);
+    -fx-text-fill: #38bdf8;
+    -fx-border-color: #38bdf8;
 }
 .task-btn-delete {
     -fx-background-color: transparent;
